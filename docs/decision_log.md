@@ -115,9 +115,31 @@ example:
  B retry 2 BEGIN findIdemPotKey("abc") --> not seen --> build lead, add agent, insert lead(key=abc) --> UNIQUE CONSTRAINT VIOLATION --> ROLLBACK
 
 
+# Routing Algorithm
+*"Se più agenti sono idonei, scegli quello con il carico minore o usa una logica Round Robin." ("If multiple agents are eligible, choose the one with the lowest load or use a Round Robin logic.")*
+
+## Round Robin has multiple issues:
+ - Tracking sequence A -> B -> C -> D
+   - If for some reason an instance that is tracking the sequence goes down where does it restart?
+     - We would need to persist it somehow (DB)
+ - Agent Removal/Deactivation
+   - Admin removes Agent (retired, got fired etcc...)
+     - If deactivation happens mid cylce (the system might handle thousand of agents) if any of these are removed we wouldn't know how where to continue
+ - Horizonat Scaling
+   - 2 instances of the system need a shared state
+     - this can either be persisted or we would need another way to handle sequence distribution
+## Lowest Load
+The decision was mainly made through elimnation at first.
+The reaasoning on why it's a better decision came after; it sums up to simplicity (3 liner code) vs Sequence Distribution Algorithm + DB persistence + multi instance alignment
+```java
+int minLoad = candidates.stream().mapToInt(AgentWithLoad::currentLoad).min().orElseThrow();
+List<AgentWithLoad> tied = candidates.stream().filter(c -> c.currentLoad() == minLoad).toList();
+return Optional.of(tied.get(tiebreaker.nextInt(tied.size())));
+```
+
 ---
 # What could've been added 
 - OpenApi spec first contracts
 - Scalability: Redis/cache optimization (cities and status leads are rarely modified).
-  - This adds complexity through invalidation logic
+  - Adds complexity through invalidation logic
 
