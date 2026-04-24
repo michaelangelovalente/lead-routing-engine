@@ -7,5 +7,7 @@ public record LeadAssignedEvent(
         String assignmentId,
         String city,
         String assignedAt,
+        // version handling for code change/structure event change (if fields are added change schema version for deserialazion)
         int schemaVersion
+
 ) implements DomainEvent {}
