@@ -104,8 +104,15 @@ Tx2 would load the up-to-date counter and conclude that it cannot increment it.
 
 
 # Idempotency Key
+USed by client, if for some reason theres a network failure
+while the request is being received, client can retry with the same 
+`lead.idempotency_key`
+This avoids duplicate assignments on our system
 
-
+example:
+ A retry 1 BEGIN findIdemPotKey("abc") --> not seen --> build lead, add agent, insert lead(key=abc), insert assignment COMMIT
+(B findIdemPotKey("abc") happens while A is still processing)
+ B retry 2 BEGIN findIdemPotKey("abc") --> not seen --> build lead, add agent, insert lead(key=abc) --> UNIQUE CONSTRAINT VIOLATION --> ROLLBACK
 
 
 ---
