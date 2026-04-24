@@ -8,6 +8,7 @@ import java.time.Instant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+// Lead has exactly two states: NEW → ASSIGNED. markAssigned() is the only transition.
 class LeadTest {
 
     private Lead freshLead() {
@@ -21,11 +22,13 @@ class LeadTest {
     }
 
     @Test
+    // Initial state is part of the contract — downstream branching on NEW depends on this.
     void newLead_hasStatusNew() {
         assertThat(freshLead().status()).isEqualTo(LeadStatus.NEW);
     }
 
     @Test
+    // Happy path — verify the transition works before testing what happens when it is violated.
     void markAssigned_transitionsToAssigned() {
         Lead lead = freshLead();
         lead.markAssigned();
@@ -33,6 +36,7 @@ class LeadTest {
     }
 
     @Test
+    // Re-assigning is a domain violation; message is asserted because it surfaces in logs and error responses.
     void markAssigned_twice_throwsIllegalState() {
         Lead lead = freshLead();
         lead.markAssigned();
@@ -42,6 +46,7 @@ class LeadTest {
     }
 
     @Test
+    // A blank propertyReference makes the lead uninterpretable — reject at construction, not at runtime.
     void blankPropertyReference_throwsIllegalArgument() {
         assertThatThrownBy(() -> new Lead(
                 LeadId.generate(),

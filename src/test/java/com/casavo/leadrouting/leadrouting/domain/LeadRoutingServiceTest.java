@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// Random is injected so tests can seed it for deterministic tiebreaking.
 class LeadRoutingServiceTest {
 
     private final City milano = new City("Milano");
@@ -24,12 +25,14 @@ class LeadRoutingServiceTest {
             new IdempotencyKey("key-1"));
 
     @Test
+    // Empty list maps to NoEligibleAgent — all agents full or none in city. Must not throw.
     void returnsEmptyWhenNoCandidates() {
         var service = new LeadRoutingService(new Random());
         assertThat(service.pickAgent(lead, List.of())).isEmpty();
     }
 
     @Test
+    // Core business rule: fewest current assignments wins. No ties here, so Random is irrelevant.
     void picksAgentWithLowestLoad() {
         var service = new LeadRoutingService(new Random(0));
         Agent low = agent("low", milano);
@@ -43,6 +46,7 @@ class LeadRoutingServiceTest {
     }
 
     @Test
+    // Service receives pre-filtered candidates; a single high-load agent is valid input and must be returned.
     void picksSingleCandidateRegardlessOfLoad() {
         var service = new LeadRoutingService(new Random());
         Agent only = agent("only", milano);
@@ -53,6 +57,7 @@ class LeadRoutingServiceTest {
     }
 
     @Test
+    // Tied agents: asserts one of the two is returned without pinning which, so the test survives any seed.
     void tiedAgentsAreChoosenByRandom() {
         var service = new LeadRoutingService(new Random(0));
         Agent a = agent("a", milano);
