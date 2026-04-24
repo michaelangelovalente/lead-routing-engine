@@ -29,6 +29,23 @@ public final class Lead {
         this.status = LeadStatus.NEW;
     }
 
+    private Lead(
+            LeadId id,
+            CustomerContact customer,
+            String propertyReference,
+            City city,
+            Instant receivedAt,
+            IdempotencyKey idempotencyKey,
+            LeadStatus status) {
+        this.id = id;
+        this.customer = customer;
+        this.propertyReference = propertyReference;
+        this.city = city;
+        this.receivedAt = receivedAt;
+        this.idempotencyKey = idempotencyKey;
+        this.status = status;
+    }
+
     public static Lead reconstitute(
             LeadId id,
             CustomerContact customer,
@@ -37,9 +54,7 @@ public final class Lead {
             Instant receivedAt,
             IdempotencyKey idempotencyKey,
             LeadStatus status) {
-        var lead = new Lead(id, customer, propertyReference, city, receivedAt, idempotencyKey);
-        lead.status = status;
-        return lead;
+        return new Lead(id, customer, propertyReference, city, receivedAt, idempotencyKey, status);
     }
 
     public void markAssigned() {

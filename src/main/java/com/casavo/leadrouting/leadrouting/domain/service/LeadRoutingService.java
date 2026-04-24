@@ -1,6 +1,5 @@
 package com.casavo.leadrouting.leadrouting.domain.service;
 
-import com.casavo.leadrouting.leadrouting.domain.model.Agent;
 import com.casavo.leadrouting.leadrouting.domain.model.Lead;
 
 import java.util.List;
@@ -16,7 +15,7 @@ public final class LeadRoutingService {
         this.tiebreaker = Objects.requireNonNull(tiebreaker);
     }
 
-    public Optional<Agent> pickAgent(Lead lead, List<AgentWithLoad> candidates) {
+    public Optional<AgentWithLoad> pickAgent(Lead lead, List<AgentWithLoad> candidates) {
         Objects.requireNonNull(lead);
         if (candidates.isEmpty()) return Optional.empty();
 
@@ -24,11 +23,10 @@ public final class LeadRoutingService {
                 .mapToInt(AgentWithLoad::currentLoad)
                 .min().orElseThrow();
 
-        List<Agent> lowestLoaded = candidates.stream()
+        List<AgentWithLoad> tied = candidates.stream()
                 .filter(c -> c.currentLoad() == minLoad)
-                .map(AgentWithLoad::agent)
                 .toList();
 
-        return Optional.of(lowestLoaded.get(tiebreaker.nextInt(lowestLoaded.size())));
+        return Optional.of(tied.get(tiebreaker.nextInt(tied.size())));
     }
 }
