@@ -80,7 +80,7 @@ No complex object graphs. `JdbcClient` handles this with explicit and a limited 
     - The application needs fine grained contol for the locking mechanism (altough @NativeQuery(could be used but, it wouldn't be worth the overhead?)
 
 # Outbox Relay/Transaction Outbot
-"Immagina che il sistema di notifica agli agenti (esterno) possa fallire. Come garantiamo che il lead non vada perduto?"
+*"Immagina che il sistema di notifica agli agenti (esterno) possa fallire. Come garantiamo che il lead non vada perduto?"*
 Async processing Routing Service <-> RabbitMQ <-> Notifaction Service
 
 On lead assignment 2 things can happen:
@@ -88,13 +88,29 @@ On lead assignment 2 things can happen:
     - Notify Agentt / call notification through PORT
     2 phases if the second phase fails the lead gets lost, by appending the AssignLead event to the outbox
 
+## Summarry
+Outbox converts cross-system calls (DB <-> externa services/Notification ) into centralized db rows.
+at-least-once delivery runs in the background
+
 
 ## Pessimistic locking on agents
-" Il sistema deve evitare che due lead diversi vengano assegnati contemporaneamente allo stesso agente se questo ha un solo "slot" disponibile"
+*" Il sistema deve evitare che due lead diversi vengano assegnati contemporaneamente allo stesso agente se questo ha un solo "slot" disponibile"*
 Conflict rates for agents here are high, Optimistic locking acts on the assumption that conflicts are rare.
 They aren't in this system, the probability of having multiple leads from the same city (e.g. MILAN) is high
 Optimistic locking would do extra work (ROLLBACK) without the blocking mechanism.
 
 Pesimistic Llocking if we had agent A and Tx1 and Tx2 leads, Tx1 would hold the transaction, complete it, set the counter to 5 and commit.
 Tx2 would load the up-to-date counter and conclude that it cannot increment it.
+
+
+# Idempotency Key
+
+
+
+
+---
+# What could've been added 
+- OpenApi spec first contracts
+- Scalability: Redis/cache optimization (cities and status leads are rarely modified).
+  - This adds complexity through invalidation logic
 
