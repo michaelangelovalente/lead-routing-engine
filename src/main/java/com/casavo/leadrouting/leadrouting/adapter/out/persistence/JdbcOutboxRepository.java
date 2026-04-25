@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,7 +61,7 @@ public class JdbcOutboxRepository implements OutboxRepository {
     @Override
     public void markPublished(UUID eventId, Instant publishedAt) {
         jdbc.sql("UPDATE outbox_event SET published_at = :publishedAt WHERE id = :id")
-                .param("publishedAt", publishedAt)
+                .param("publishedAt", toOdt(publishedAt))
                 .param("id", eventId)
                 .update();
     }
@@ -83,10 +85,14 @@ public class JdbcOutboxRepository implements OutboxRepository {
                 SET failed_at = :failedAt, last_error = :lastError, retry_count = retry_count + 1
                 WHERE id = :id
                 """)
-                .param("failedAt", failedAt)
+                .param("failedAt", toOdt(failedAt))
                 .param("lastError", lastError)
                 .param("id", eventId)
                 .update();
+    }
+
+    private static OffsetDateTime toOdt(Instant instant) {
+        return OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
     }
 
     private String serialize(LeadAssignedEvent event) {

@@ -12,6 +12,9 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -55,8 +58,12 @@ public class JdbcLeadRepository implements LeadRepository {
                 .param("propertyReference", lead.propertyReference())
                 .param("city", lead.city().name())
                 .param("status", lead.status().name())
-                .param("receivedAt", lead.receivedAt())
+                .param("receivedAt", toOdt(lead.receivedAt()))
                 .update();
+    }
+
+    private static OffsetDateTime toOdt(Instant instant) {
+        return OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
     }
 
     private Lead mapRow(ResultSet rs, int rowNum) throws SQLException {

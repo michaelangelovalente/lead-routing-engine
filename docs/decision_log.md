@@ -45,7 +45,7 @@ header: <Idempotency-Key: 01932f4c-7d8e-7a3b-b2c5-8f9a1e2d3c4b>
         }
 ```
 
-"Salva l'assegnazione su database per mantenere un audit trail."<br>
+"Salva **l'assegnazione su database per mantenere un audit trail.**"<br>
 *"Monitoraggio e Osservabilità (come capiremmo se un agente sta ricevendo troppi lead?)"* <br>
 
 Assignments endpoint: avoids having to directly query the DB. This can be used by a monitoring tool

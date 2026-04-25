@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +37,7 @@ public class JdbcAssignmentRepository implements AssignmentRepository {
                 .param("id", assignment.id().value())
                 .param("leadId", assignment.leadId().value())
                 .param("agentId", assignment.agentId().value())
-                .param("assignedAt", assignment.assignedAt())
+                .param("assignedAt", toOdt(assignment.assignedAt()))
                 .update();
     }
 
@@ -50,7 +52,7 @@ public class JdbcAssignmentRepository implements AssignmentRepository {
                 GROUP BY agent_id
                 """)
                 .param("agentIds", ids)
-                .param("since", since)
+                .param("since", toOdt(since))
                 .query(this::mapLoadRow)
                 .list()
                 .stream()
@@ -86,7 +88,7 @@ public class JdbcAssignmentRepository implements AssignmentRepository {
                     LIMIT :limit
                     """)
                     .param("agentId", agentId.value())
-                    .param("cursorAt", cursorAt.get())
+                    .param("cursorAt", toOdt(cursorAt.get()))
                     .param("cursorId", cursorId.get())
                     .param("limit", maxResults)
                     .query(this::mapRow)
@@ -103,6 +105,10 @@ public class JdbcAssignmentRepository implements AssignmentRepository {
                 .param("limit", maxResults)
                 .query(this::mapRow)
                 .list();
+    }
+
+    private static OffsetDateTime toOdt(Instant instant) {
+        return OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
     }
 
     private Assignment mapRow(ResultSet rs, int rowNum) throws SQLException {
